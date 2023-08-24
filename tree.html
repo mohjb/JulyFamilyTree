@@ -1,0 +1,407 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>July Family Tree</title>
+	<style>details{
+		padding:20px;
+	}</style>
+	<script>
+class Node{
+ static ids={ sttc:0,roots:[],newId:z=> ++Node.ids.sttc
+	, findRoots:function(){
+		const a=Object.values(Node.ids).filter(n=>( n instanceof Node )&&(!n.parents || !Marriage.ids[n.parents]))
+		return a;}
+
+	,fromJson:json=>{
+		let r=(json&& Node.ids[json.id])
+		if(r)
+		r.set(json);else
+		r=new Node(json)
+		return r;
+	}
+	,Fields:[
+		{name:'id',type:'pk',ar:'-',readonly:1}
+		,{name:'created',type:'date',ar:'-',readonly:1}
+		,{name:'lastModified',type:'date',ar:'-',readonly:1}
+		,{name:'name',type:'string',ar:'-'}
+		,{name:'parents',type:'fk',fk:'Marriage',ar:'-'}//,{name:'father',type:'fk',ar:'-'},{name:'mother',type:'fk',ar:'-'}
+		,{name:'dob',type:'date',ar:'-'}
+		,{name:'gender',type:'enum',enum:['male','female'],ar:'-',arEnum:['m','f']}
+		,{name:'image',type:'image',ar:'-'}
+		,{name:'marriage',type:'fk',fk:'Marriage',optional:true,ar:'-'}
+		,{name:'dateOfDeath',type:'date',optional:true,ar:'-'}
+		,{name:'pendingDataEntry',type:'boolean',optional:true,ar:'-'}
+		,{name:'notes',type:'text',optional:true,ar:'-'}
+	]
+ } // ids
+
+ id=0;created=lastModified=new Date();
+ name='-';//string ; english=''
+ parents=0;//father=0;mother=0;// // reference(fk id) of marriage
+ dob=0; //
+ gender=0;
+ pendingEntry=1;
+ image=0; //marriage=0;//{date:0,divorce:0,}
+
+ constructor(o){this.id=o?.id||Node.ids.newId();
+	this.set(o)//Object.assign(this,o);
+	Node.ids[this.id]=this;}
+
+ set(json) {if(json)
+  for (const property in json) {
+	if (property === "id") {
+		this.id = json.id;
+	} else //if (this[property] !== undefined)
+	{const v=json[property],field = Node.ids.Fields.
+		find((field) => field.name === property);
+		this[property] = v;
+		if (field) {
+			switch (field.type) {
+				case "fk":
+					this['ref_'+property]=Node.ids[this[property]=v];
+				break;
+				case "date":
+					this[property] = v instanceof Date?v:new Date(v);
+				break;
+				case "enum":
+					//this[property] = new Image(v);
+				break;
+				case "image":
+					this[property] = new Image(v);
+				break;
+			}
+		}
+	}//else if
+	} // for
+	return this;
+} // set
+
+ } // class Node
+
+class Marriage{
+ static ids={ sttc:0,newId:z=> ++Marriage.ids.sttc
+	,fromJson:json=>{
+		let r=(json&& Marriage.ids[json.id])||new Marriage(json)
+	},
+
+	Fields:[{name:'id',type:'pk',ar:'-',readonly:1}
+			,{name:'created',type:'date',ar:'-',readonly:1}
+			,{name:'lastModified',type:'date',ar:'-',readonly:1}
+		,{name:'children',type:'NodeArray',ar:'-'}
+		,{name:'husband',type:'fk',fk:'Node',ar:'-'}
+		,{name:'wife',type:'fk',fk:'Node',ar:'-'}
+		,{name:'date',type:'date',ar:'-'}
+		,{name:'divorceDate',type:'date',optional:true,ar:'-'}
+		,{name:'pendingDataEntry',type:'boolean',optional:true,ar:'-'}
+		,{name:'notes',type:'text',optional:true,ar:'-'}]}
+
+ id=0;created=lastModified=new Date();
+ husband=0;//fk id
+ wife=0;// fk id
+ date=0;//js-date , divorce: js-date
+ children=0// array of fk id
+
+ constructor(o){this.id=o?.id||Marriage.ids.newId();
+		this.set(o)//Object.assign(this,o);
+		Marriage.ids[this.id]=this;}
+
+ set(json) {if(json)
+	for (const property in json) {
+		if (property === "id") {
+			this.id = json.id;
+		} else //if (this[property] !== undefined)
+		{const v=json[property],field = Node.ids.Fields.
+			find((field) => field.name === property);
+			this[property] = v;
+			if (field) {
+				switch (field.type) {
+					case "fk":
+						Node.ids[v];
+					break;
+					case "date":
+						this[property] = v instanceof Date?v:new Date(v);
+					break;
+					case "enum":
+						//this[property] = new Image(v);
+					break;
+					case "image":
+						this[property] = new Image(v);
+					break;
+				}
+			}
+		}//else if
+		} // for
+	return this;
+ } // set
+
+} // class Marriage
+
+class Stor{
+	//saveNode(n){}saveMariage(m){}
+	
+	save(){
+		Object.values(Node.ids).map(v=>{
+			
+		})
+	}
+ load(){}
+} // class Stor
+
+//class Path{}//class Tree{}//
+class Edit{
+	static sttc={node:new Node(),mrg:new Marriage()}
+ static init(){
+	Edit.dom.dsTree(
+	{	entry:{//bld.onBld
+			node:{	bld:
+				{onBld:(b,p)=>
+					{console.log('Edit.init:dsTree:entry:node:bld:onBld:parent=',p,b)
+						Edit.genEdit(Edit.sttc.node,p);
+						Edit.dom.bld([
+							{n:'button',t:'new root',clk:evt=>{
+								console.log('Edit.init:dsTree:entry.node.bld.onBld:bld:input.clk:button:newRoot:clk')
+							}}
+							,{n:'button',t:'new Child',clk:evt=>{
+								console.log('Edit.init:dsTree:entry.node.bld.onBld:bld:input.clk:button:newChild:clk')
+							
+							}}
+						])
+					}
+				}
+			}
+			,marriage:{bld:
+				{onBld:(b,p)=>
+					{console.log('Edit.init:dsTree:entry:marriage:bld:onBld:parent=',p,b)
+						Edit.genEdit(Edit.sttc.mrg ,p);
+						Edit.dom.bld([
+							{n:'button',t:'new root',clk:evt=>{
+								console.log('Edit.init:dsTree:entry.marriage.bld.onBld:bld:input.clk:button:newRoot:clk')
+							}}
+							,{n:'button',t:'new Child',clk:evt=>{
+								console.log('Edit.init:dsTree:entry.marriage.bld.onBld:bld:input.clk:button:newChild:clk')
+							
+							}}
+						])
+					}
+				}
+			}
+			,pending:{}
+		}//entry
+		,tree:{roots:{}
+			,path:{}
+		}
+	},document.body)
+ }// init
+
+ static dom={id:id=>document.getElementById(id)
+	,bld:function bld(o, p, pb) { // o::= {n:<string:element-name, or function(bldInstance) returns string element-name, overridden if o.tbl or o.select> , t:<string:inner-text, or function(bldInstance) returns string>,  ih:<string:innerHTML, or function(bldInstance)>, styl:<string: cssText>, tbl:<array(or func that returns 2dArray) of array of recursive bld-objs, this function-call uses insertRow and insertCell for the 2d-array-items> , onBld:<function(b,p):event handler> ,a:<array:items are recursive-objects for bld>} or if o is text then append textNode to parent, p::= optional parent dom-element , pb::= parent bld-instance object
+		const to=typeof(o)
+		,append2parent=function append2parent(r,p){
+			if (r&& p && p.appendChild instanceof Function)
+				p.appendChild(r);
+			return r; } // append2parent
+		//,Pb=function()
+		if(!o)
+			return o;
+		else if (to === "function")
+			return bld( o(p, pb),p,pb);
+		else if(to=='string')
+			return append2parent(document.createTextNode(o),p);
+		else if(Array.isArray(o))
+			return o.map((e) => bld(e, p, pb))
+		const n = o.tbl?'table':o.select?'select':(o?.n || "span")
+			,tn=typeof n
+			,dce=function dce(n){let r=0;
+				try{
+					r=
+					document
+					.
+					createElement
+					(
+						n
+					)
+				}
+				catch
+				(
+					ex
+				){
+					
+					console
+					.
+					warn
+					(
+					 ex
+					)
+				}
+				return r;
+			}
+			, r = tn==="function"	? n(o,p, pb)
+				: tn === "string"	? dce(n)
+				: o // null
+			, b = (r.bld = { dom: r, bld: o });
+		if (pb) {
+			b.p = pb;
+			if (!pb.c)
+				pb.c = [];
+			pb.c.push(b) ;
+		}
+		Object.assign(r, o);
+		if (o.t )
+			r.innerText=o.t instanceof Function?o.t(b): o.t;
+		if (o.styl) {try {
+			 Object.assign(r.style, o.styl);
+			} catch (ex) {
+			r.style.cssText=o.styl;
+			console.warn("Edit.dom.bld:styl:", o.styl, r.style, r, o, p, b);
+		}}
+		if (o.ih)
+			r.innerHTML = o.ih instanceof Function ? o.ih(b) : o.ih;
+		if (o.dsTree) {try {
+				dsTree(o.dsTree,p,pb);
+			} catch (ex) {
+				console.warn("Edit.dom.bld:dsTree:", o.dsTree, b);
+		}}
+		if (o.tbl) {try {
+				const rows=o.tbl instanceof Function?o.tbl(b,r):o.tbl;
+				rows?.forEach((cols,ri)=>{
+					const tr=r.insertRow()
+					,cls=cols instanceof Function?cols(b,tr,ri):cols;
+					cls?.forEach((col,ci)=>{
+						const td=tr.insertCell()
+						,c=col instanceof Function?col(b,td,ci,ri):col;
+						bld(c,td,b)
+					})
+				})
+			} catch (ex) {
+				console.warn("Edit.dom.bld.tbl:", o.tbl, b);
+		}}else
+		if (o.select) {try {
+			const rows=o.select instanceof Function?o.select(b,r):o.select;
+			rows?.forEach((opt,ri)=>{
+				const option=document.createElement("option")
+				,w=opt instanceof Function?opt(b,tr,ri):opt;
+				option.text=w?.text||w;option.value=w?.value||w?.text||w
+				bld(w,r,b)
+				r.add(option);
+			})
+			} catch (ex) {
+				console.warn("Edit.dom.bld.select:", o.select , b);
+		}}
+		if(o.chng)
+			r.onchange=o.chng;
+		if(o.model){
+			const chg=r.onchange,m=o.model
+				instanceof Function?o.model(b,p):o.model;
+			//listeners
+			//callback
+			r.onchange=function(evt){
+				console.log('Edit.dom.bld:model:onchange:evt=',evt
+					,',bldObject=',b,',model=',m
+					,',prm-bld-obj=',o,',prm-parent=',p)
+				try{
+					if(m?.scope && m?.name){
+						m.scope[m.name]=r.value;
+					}if(chg)
+					chg(evt);
+				}catch(ex){
+					console.log('Edit.dom.bld:model:onchange:evt=',evt,',ex=',ex)
+				}
+			}
+		}
+		if (o.onBld instanceof Function)
+			o.onBld(b,p); // r=
+		if (o.a && o.a.map instanceof Function)
+			b.a = o.a.map((c) =>
+				bld(c, r, b));
+		return append2parent(r,p);
+	} // bld function
+
+	,dsTree:function dsTree(o, p,pb){
+		/*
+				const $='summary'
+				return o&&Object.keys(o).map(k=>{
+					const ok=o[k],b=ok&&ok.bld
+					,d=k!='bld'&&Edit.dom.bld(o.bld||o,p,'details'),
+					//ok=(o[k]&&o[k].nameSummary)||k
+					,d=Edit.dom.dsTree( ok.bld||{n:$,a:[ok]} , d , $ , ok.id ,ok.styl , ok.ih||k , ok.cn)
+					return d;
+				})*/
+		for (let k in o) {
+			const ok=o[k],kb=ok&&ok.bld
+			let detailsElement=0;
+			if (kb) {
+				console.log('Edit.dom.dsTree:child(key=',k,') has bld:',kb);
+				const x=Object.assign({},kb)
+				if(!x.n)
+					x.n="details"
+				if(!x.a)
+					x.a=[{n:'summary',t:k}]
+				else if(!x.a.find(i=>i.n=='summary'))
+					x.a.unshift({n:'summary',t:k})
+				detailsElement = Edit.dom.bld(x, p)
+			}else if(k!='bld')
+				detailsElement = Edit.dom.bld({ n: "details",a:[{n:'summary',t:k}] }, p,pb)
+			if (ok )
+				dsTree(ok, detailsElement,pb); // pb_prm={bld:ok,dom:detailsElement,p:pb}
+		} // for k
+	} // dsTree
+	
+	/*,getScope:function getScope(n){
+		if(n.bld)
+			return n.bld;
+		let r= getScope(n.parentNode)
+		if(r)
+			return r;
+	}
+	,lookup:function lookup(id,n){
+		// cases:func ; array of path of identifier ; string of fully qualified id; string of id
+		let scop=getScope(n);
+		
+	}
+	,setOnScope:function setOnScope(scop,id,v){
+		// cases:func ; array of path of identifier ; string of fully qualified id; string of id
+		let scop=getScope(n);
+		
+	}
+	,bind:function(form,obj){}*/
+ } // dom
+
+ static genEdit(node,p,parentsMarriage){
+	//3 layouts: table rows , table columns , fieldset / css-grid
+	// if parameter-node is undefined, then generate an editor for creating a new node.
+	// if parameter-parentsMarriage is undefined , its a root,
+		const tbl=Node.ids.Fields.map(c=>[c.name,c.type=='enum'
+			?{select:c.enum,model:{scope:node,property:c,name:c.name}}
+			:{n:'input',model:{scope:node,property:c,name:c.name}
+				,type:c.type=='pk'?'integer'
+				:c.type=='date'?'datetime-local'
+				:c.type=='fk'?'button'
+				:c.type=='enum'?'select'
+				:c.type=='image'?'file'
+				:c.type=='boolean'?'checkbox'
+				:'text'
+				,onBld:()=>{
+					console.log('Edit.genEdit:Node.ids.Fields.map:c=',c,',2nd td ')}
+			}])
+		Edit.dom.bld([
+			{tbl},{n:'button',t:'save',clk:evt=>{
+				console.log( 'Edit.genEdit:button:save:clk')
+			}}]
+		,p)
+		return node;
+	} // static genEdit(p,parentsMarriage,node)
+
+ static genList(p,nodes){
+			
+	}
+
+ static genNewEdit(p,parentsMarriage,node){
+			
+	}
+
+ static genListNewEdit(p, parentsMarriage,node){
+			
+	}
+
+} // class Edit
+
+window.onload=Edit.init;
+
+</script></head><body></body></html>
